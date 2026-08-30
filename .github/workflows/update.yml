@@ -1,12 +1,10 @@
-yaml
-name: Update IPTV Sources
-
-# 触发条件：定时任务 + 手动触发
 on:
+  push:
+    branches: [ main ]  # 当向 main 分支推送代码时触发
+    paths:
+      - 'config/**'     # 可选：仅当 config 文件夹下的文件变动时才触发，节省资源
   schedule:
-    # 每天北京时间 6:00 和 18:00 执行 (UTC 时间分别为 22:00 和 10:00)
     - cron: '0 22 * * *'
-    - cron: '0 10 * * *'
   workflow_dispatch: # 允许在 Actions 页面手动点击运行
 
 jobs:
