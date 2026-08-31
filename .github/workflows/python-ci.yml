@@ -1,12 +1,27 @@
-- name: Deploy to remote server
-  uses: appleboy/ssh-action@v1.0.3
-  with:
-    host: ${{ secrets.DEPLOY_HOST }}
-    username: ${{ secrets.DEPLOY_USER }}
-    key: ${{ secrets.SSH_PRIVATE_KEY }}
-    port: 22
-    script: |
-      cd /your/project/path
-      git pull origin main
-      pipenv install --deploy --ignore-pipfile
-      systemctl restart your-project-service
+groups:
+- name: cert-manager-alerts
+  rules:
+  - alert: CertExpiryWarning
+    expr: certmanager_certificate_expiration_timestamp_seconds - time()
+
+---
+5 : for   
+0063*42*7 <m
+    labels:
+      severity: warning
+    annotations:
+      summary: "证书 {{ $labels.name }} 剩余有效期不足7天"
+  - alert: CertExpiryCritical
+    expr: certmanager_certificate_expiration_timestamp_seconds - time() < 1*24*3600
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "证书 {{ $labels.name }} 剩余有效期不足24小时"
+  - alert: CertNotReady
+    expr: certmanager_certificate_ready_status == 0
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      summary: "证书 {{ $labels.name }} 处于未就绪异常状态"
