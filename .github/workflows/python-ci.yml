@@ -1,62 +1,12 @@
-name: 你的项目专属Pipenv CI/CD
-on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
-
-jobs:
-  test-build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set Up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: "pipenv"
-
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pipenv
-          pipenv install --deploy --dev
-
-      - name: Run Custom Build Script
-        run: pipenv run 你的项目自定义构建命令
-
-  production-deploy:
-    needs: test-build
-    runs-on: ubuntu-latest
-    environment: production
-    concurrency: production
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set Up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: "pipenv"
-
-      - name: Install Production Dependencies
-        run: |
-          pip install pipenv
-          pipenv sync --deploy --system
-
-      - name: Custom Deploy to Server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.PROD_SERVER_HOST }}
-          port: ${{ secrets.PROD_SERVER_PORT }}
-          username: ${{ secrets.PROD_SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /你的项目在服务器上的绝对路径
-            bash 你的自定义服务重启脚本.sh
+- name: Deploy to remote server
+  uses: appleboy/ssh-action@v1.0.3
+  with:
+    host: ${{ secrets.DEPLOY_HOST }}
+    username: ${{ secrets.DEPLOY_USER }}
+    key: ${{ secrets.SSH_PRIVATE_KEY }}
+    port: 22
+    script: |
+      cd /your/project/path
+      git pull origin main
+      pipenv install --deploy --ignore-pipfile
+      systemctl restart your-project-service
